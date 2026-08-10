@@ -1,1 +1,124 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bird Flying Game</title>
+<style>
+body{
+  margin:0;
+  overflow:hidden;
+  background:skyblue;
+  font-family:Arial;
+  text-align:center;
+}
+canvas{
+  display:block;
+  margin:auto;
+  background:linear-gradient(#63c5f5,#dff7ff);
+}
+h2{
+  margin:8px;
+}
+</style>
+</head>
+<body>
+
+<h2>🐦 Bird Flying Game</h2>
+<canvas id="game" width="360" height="600"></canvas>
+
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+
+let bird={x:70,y:250,r:16,vy:0};
+let pipes=[];
+let score=0;
+let gameOver=false;
+let frame=0;
+
+function flap(){
+  if(gameOver){
+    location.reload();
+    return;
+  }
+  bird.vy=-7;
+}
+
+document.addEventListener("click",flap);
+document.addEventListener("touchstart",flap);
+
+function addPipe(){
+  let gap=150;
+  let top=80+Math.random()*220;
+  pipes.push({x:c.width,top:top,bottom:top+gap});
+}
+
+function drawBird(){
+  ctx.font="32px Arial";
+  ctx.fillText("🐦",bird.x-16,bird.y+12);
+}
+
+function loop(){
+  if(gameOver)return;
+
+  frame++;
+  ctx.clearRect(0,0,c.width,c.height);
+
+  bird.vy+=0.35;
+  bird.y+=bird.vy;
+
+  if(frame%100===0)addPipe();
+
+  for(let p of pipes){
+    p.x-=2.5;
+
+    ctx.fillStyle="green";
+    ctx.fillRect(p.x,0,50,p.top);
+    ctx.fillRect(p.x,p.bottom,50,c.height-p.bottom);
+
+    if(
+      bird.x+12>p.x &&
+      bird.x-12<p.x+50 &&
+      (bird.y-12<p.top || bird.y+12>p.bottom)
+    ){
+      gameOver=true;
+    }
+  }
+
+  pipes=pipes.filter(p=>p.x>-60);
+
+  if(bird.y<0 || bird.y>c.height){
+    gameOver=true;
+  }
+
+  drawBird();
+
+  ctx.fillStyle="black";
+  ctx.font="24px Arial";
+  ctx.fillText("Score: "+score,10,30);
+
+  for(let p of pipes){
+    if(!p.passed && p.x+50<bird.x){
+      p.passed=true;
+      score++;
+    }
+  }
+
+  if(gameOver){
+    ctx.fillStyle="red";
+    ctx.font="32px Arial";
+    ctx.fillText("GAME OVER",80,280);
+    ctx.font="18px Arial";
+    ctx.fillStyle="black";
+    ctx.fillText("Tap to restart",115,315);
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+  </html>
