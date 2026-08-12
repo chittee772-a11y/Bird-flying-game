@@ -1,112 +1,336 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
 <title>Offline Battle</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     background: #111;
     color: white;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     text-align: center;
+    user-select: none;
 }
 
-canvas {
-    background: #222;
-    display: block;
-    margin: auto;
-    border: 2px solid white;
-    max-width: 100%;
+h1 {
+    margin: 15px 0;
+    font-size: 28px;
 }
 
 button {
+    border: 0;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin: 5px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#game {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    background: #222;
+    border: 3px solid white;
+    display: block;
+    margin: 10px auto;
+}
+
+#status {
+    font-size: 18px;
+    margin: 10px;
+}
+
+.controls {
+    margin-top: 10px;
+}
+
+.control {
+    width: 65px;
+    height: 55px;
+    padding: 5px;
+    font-size: 25px;
+}
+
+.attack {
+    width: 130px;
+    background: #d22;
+    color: white;
+}
+
+#score {
     font-size: 20px;
-    padding: 12px 25px;
     margin: 8px;
-    border-radius: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>⚔️ OFFLINE BATTLE ⚔️</h2>
+<h1>⚔️ OFFLINE BATTLE ⚔️</h1>
 
-<button onclick="hostGame()">CREATE ROOM</button>
-<button onclick="joinGame()">JOIN ROOM</button>
+<div>
+    <button onclick="startSolo()">🎮 SOLO BATTLE</button>
+    <button onclick="createRoom()">🟢 CREATE ROOM</button>
+    <button onclick="joinRoom()">🔵 JOIN ROOM</button>
+</div>
 
-<p id="status">Waiting...</p>
+<div id="status">Choose a game mode</div>
+
+<div id="score">
+    ❤️ HP: <span id="hp">100</span>
+    &nbsp;&nbsp;
+    ⭐ Score: <span id="points">0</span>
+</div>
 
 <canvas id="game" width="800" height="450"></canvas>
+
+<div class="controls">
+
+    <div>
+        <button class="control"
+                ontouchstart="moveUp=true"
+                ontouchend="moveUp=false"
+                onmousedown="moveUp=true"
+                onmouseup="moveUp=false">
+            ⬆️
+        </button>
+    </div>
+
+    <div>
+        <button class="control"
+                ontouchstart="moveLeft=true"
+                ontouchend="moveLeft=false"
+                onmousedown="moveLeft=true"
+                onmouseup="moveLeft=false">
+            ⬅️
+        </button>
+
+        <button class="control"
+                ontouchstart="moveDown=true"
+                ontouchend="moveDown=false"
+                onmousedown="moveDown=true"
+                onmouseup="moveDown=false">
+            ⬇️
+        </button>
+
+        <button class="control"
+                ontouchstart="moveRight=true"
+                ontouchend="moveRight=false"
+                onmousedown="moveRight=true"
+                onmouseup="moveRight=false">
+            ➡️
+        </button>
+    </div>
+
+    <div>
+        <button class="attack"
+                onclick="attack()">
+            ⚔️ ATTACK
+        </button>
+    </div>
+
+</div>
 
 <script>
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let player = {
-    x: 100,
-    y: 200,
-    size: 40,
-    speed: 5
-};
+let player;
+let enemy;
 
-let enemy = {
-    x: 650,
-    y: 200,
-    size: 40
-};
+let playing = false;
+let hp = 100;
+let points = 0;
 
-let keys = {};
+let moveUp = false;
+let moveDown = false;
+let moveLeft = false;
+let moveRight = false;
 
-document.addEventListener("keydown", e => {
-    keys[e.key] = true;
-});
+function startSolo() {
 
-document.addEventListener("keyup", e => {
-    keys[e.key] = false;
-});
+    player = {
+        x: 100,
+        y: 200,
+        size: 40,
+        speed: 5
+    };
 
-function hostGame() {
+    enemy = {
+        x: 650,
+        y: 200,
+        size: 40,
+        hp: 100,
+        speed: 1.5
+    };
+
+    hp = 100;
+    points = 0;
+    playing = true;
+
+    document.getElementById("hp").innerText = hp;
+    document.getElementById("points").innerText = points;
+
     document.getElementById("status").innerText =
-        "🟢 Room Created - Player 1";
+        "🟢 SOLO MODE - Defeat the enemy!";
+
 }
 
-function joinGame() {
+function createRoom() {
+
     document.getElementById("status").innerText =
-        "🔵 Joined Room - Player 2";
+        "🟢 Room created. Multiplayer server will be added next.";
+
+}
+
+function joinRoom() {
+
+    document.getElementById("status").innerText =
+        "🔵 Join mode selected. Multiplayer server will be added next.";
+
+}
+
+function attack() {
+
+    if (!playing) return;
+
+    let dx = player.x - enemy.x;
+    let dy = player.y - enemy.y;
+
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < 100) {
+
+        enemy.hp -= 25;
+
+        if (enemy.hp <= 0) {
+
+            points += 1;
+
+            document.getElementById("points").innerText =
+                points;
+
+            enemy.x = 600 + Math.random() * 150;
+            enemy.y = 50 + Math.random() * 350;
+
+            enemy.hp = 100;
+        }
+    }
 }
 
 function update() {
 
-    if (keys["ArrowUp"] || keys["w"]) {
+    if (!playing) return;
+
+    if (moveUp)
         player.y -= player.speed;
-    }
 
-    if (keys["ArrowDown"] || keys["s"]) {
+    if (moveDown)
         player.y += player.speed;
-    }
 
-    if (keys["ArrowLeft"] || keys["a"]) {
+    if (moveLeft)
         player.x -= player.speed;
-    }
 
-    if (keys["ArrowRight"] || keys["d"]) {
+    if (moveRight)
         player.x += player.speed;
+
+    // Keep player inside screen
+
+    player.x = Math.max(
+        0,
+        Math.min(canvas.width - player.size, player.x)
+    );
+
+    player.y = Math.max(
+        0,
+        Math.min(canvas.height - player.size, player.y)
+    );
+
+    // Enemy follows player
+
+    let dx = player.x - enemy.x;
+    let dy = player.y - enemy.y;
+
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 1) {
+
+        enemy.x += (dx / distance) * enemy.speed;
+        enemy.y += (dy / distance) * enemy.speed;
     }
 
-    player.x = Math.max(0, Math.min(canvas.width-player.size, player.x));
-    player.y = Math.max(0, Math.min(canvas.height-player.size, player.y));
+    // Enemy attacks when close
+
+    if (distance < 55) {
+
+        hp -= 0.15;
+
+        document.getElementById("hp").innerText =
+            Math.max(0, Math.floor(hp));
+
+        if (hp <= 0) {
+
+            playing = false;
+
+            document.getElementById("status").innerText =
+                "💀 GAME OVER! Press SOLO BATTLE to restart.";
+        }
+    }
 }
 
 function draw() {
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    // Background
+
+    ctx.fillStyle = "#222";
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    // Center line
+
+    ctx.strokeStyle = "#444";
+    ctx.beginPath();
+
+    ctx.moveTo(
+        canvas.width / 2,
+        0
+    );
+
+    ctx.lineTo(
+        canvas.width / 2,
+        canvas.height
+    );
+
+    ctx.stroke();
+
+    if (!player || !enemy) return;
 
     // Player
-    ctx.fillStyle = "lime";
+
+    ctx.fillStyle = "#00ff22";
+
     ctx.fillRect(
         player.x,
         player.y,
@@ -115,7 +339,9 @@ function draw() {
     );
 
     // Enemy
-    ctx.fillStyle = "red";
+
+    ctx.fillStyle = "#ff1111";
+
     ctx.fillRect(
         enemy.x,
         enemy.y,
@@ -123,17 +349,32 @@ function draw() {
         enemy.size
     );
 
-    // Center line
-    ctx.strokeStyle = "#555";
-    ctx.beginPath();
-    ctx.moveTo(canvas.width/2,0);
-    ctx.lineTo(canvas.width/2,canvas.height);
-    ctx.stroke();
+    // Enemy HP bar
+
+    ctx.fillStyle = "#555";
+
+    ctx.fillRect(
+        enemy.x,
+        enemy.y - 12,
+        40,
+        6
+    );
+
+    ctx.fillStyle = "#ff3333";
+
+    ctx.fillRect(
+        enemy.x,
+        enemy.y - 12,
+        40 * (enemy.hp / 100),
+        6
+    );
 }
 
 function gameLoop() {
+
     update();
     draw();
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -142,4 +383,4 @@ gameLoop();
 </script>
 
 </body>
-    </html>
+</html>
