@@ -1,4 +1,129 @@
-// Center line
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline Battle</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+
+canvas {
+    background: #222;
+    display: block;
+    margin: auto;
+    border: 2px solid white;
+    max-width: 100%;
+}
+
+button {
+    font-size: 20px;
+    padding: 12px 25px;
+    margin: 8px;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>⚔️ OFFLINE BATTLE ⚔️</h2>
+
+<button onclick="hostGame()">CREATE ROOM</button>
+<button onclick="joinGame()">JOIN ROOM</button>
+
+<p id="status">Waiting...</p>
+
+<canvas id="game" width="800" height="450"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {
+    x: 100,
+    y: 200,
+    size: 40,
+    speed: 5
+};
+
+let enemy = {
+    x: 650,
+    y: 200,
+    size: 40
+};
+
+let keys = {};
+
+document.addEventListener("keydown", e => {
+    keys[e.key] = true;
+});
+
+document.addEventListener("keyup", e => {
+    keys[e.key] = false;
+});
+
+function hostGame() {
+    document.getElementById("status").innerText =
+        "🟢 Room Created - Player 1";
+}
+
+function joinGame() {
+    document.getElementById("status").innerText =
+        "🔵 Joined Room - Player 2";
+}
+
+function update() {
+
+    if (keys["ArrowUp"] || keys["w"]) {
+        player.y -= player.speed;
+    }
+
+    if (keys["ArrowDown"] || keys["s"]) {
+        player.y += player.speed;
+    }
+
+    if (keys["ArrowLeft"] || keys["a"]) {
+        player.x -= player.speed;
+    }
+
+    if (keys["ArrowRight"] || keys["d"]) {
+        player.x += player.speed;
+    }
+
+    player.x = Math.max(0, Math.min(canvas.width-player.size, player.x));
+    player.y = Math.max(0, Math.min(canvas.height-player.size, player.y));
+}
+
+function draw() {
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Player
+    ctx.fillStyle = "lime";
+    ctx.fillRect(
+        player.x,
+        player.y,
+        player.size,
+        player.size
+    );
+
+    // Enemy
+    ctx.fillStyle = "red";
+    ctx.fillRect(
+        enemy.x,
+        enemy.y,
+        enemy.size,
+        enemy.size
+    );
+
+    // Center line
     ctx.strokeStyle = "#555";
     ctx.beginPath();
     ctx.moveTo(canvas.width/2,0);
@@ -17,4 +142,4 @@ gameLoop();
 </script>
 
 </body>
-</html>
+    </html>
